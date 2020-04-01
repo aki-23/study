@@ -29,7 +29,7 @@ int MazePlayerInit(int *playerRow, int *playerColumn, MazeBlock maze[MAZE_ROW][M
 	{
 		for(j = 0; j < MAZE_COLUMN; j++)
 		{
-			if(maze[i][j].kind == START)
+			if(maze[i][j].kind == START) //スタート地点ならばプレイヤーの位置に設定
 			{
 				*playerRow = i;
 				*playerColumn = j;
@@ -125,9 +125,9 @@ void MazePlayerMove(int *playerRow, int *playerColumn, MazeBlock maze[MAZE_ROW][
 			if(*playerRow + 1 < MAZE_ROW - 1)
 			{
 				maze[*playerRow + 1][*playerColumn].flag = TRUE;
-				if(maze[*playerRow + 1][*playerColumn].kind != WALL) //壁判定
+				if(maze[*playerRow + 1][*playerColumn].kind != WALL)
 				{
-					*playerRow += 1; //移動
+					*playerRow += 1;
 					printf("\n下に移動しました。\n");
 				}
 				else
@@ -181,7 +181,7 @@ void MazePlayerMove(int *playerRow, int *playerColumn, MazeBlock maze[MAZE_ROW][
 //ゴール判定
 int MazeGoalCheck(int playerRow, int playerColumn, MazeBlock maze[MAZE_ROW][MAZE_COLUMN])
 {
-	if(maze[playerRow][playerColumn].kind == GOAL) //プライヤー位置がゴール地点に等しい
+	if(maze[playerRow][playerColumn].kind == GOAL)
 	{
 		printf("ゴール！\n");
 		return 1;
@@ -210,12 +210,12 @@ int main(void)
 	if(MazePlayerInit(&player.row, &player.column, maze) == -1)
 		return 0;
 	
-	while(MazeGoalCheck(player.row, player.column, maze) != 1)
+	while(MazeGoalCheck(player.row, player.column, maze) != 1) //ゴールするまで繰り返す
 	{
-	//迷路表示
-	MazeDraw(player.row, player.column, maze);
-	//プレイヤー移動
-	MazePlayerMove(&player.row, &player.column, maze);
+		//迷路表示
+		MazeDraw(player.row, player.column, maze);
+		//プレイヤー移動
+		MazePlayerMove(&player.row, &player.column, maze);
 	}
 
 	//迷路最終結果発表
