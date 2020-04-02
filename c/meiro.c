@@ -191,50 +191,110 @@ int MazeGoalCheck(int playerRow, int playerColumn, MazeBlock maze[MAZE_ROW * MAZ
 }
 
 //迷路ゲーム
-void MazeGame(int stage)
+void MazeGame()
 {
+	char fileName[100];
+	char buf[100];
+	FILE* fp;
+	int i, kind;
+	int goalCheck = 0;
+
 	//プレイヤー
 	MazePlayer player;
 
 	//迷路
-	MazeBlock maze[STAGE][MAZE_ROW * MAZE_COLUMN] =
+	MazeBlock maze[MAZE_ROW * MAZE_COLUMN];
+
+	//ファイル読み込み
+	printf("ファイル名を入力してください。: ");
+	fgets(fileName, sizeof(fileName), stdin);
+
+	//改行を終端文字に書き換える
+	for(i = 0; i < 100; i++)
 	{
-		{ //STAGE0
-			{FRAME, TRUE } , {FRAME, TRUE } , {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE },
-			{FRAME, TRUE } , {START, TRUE } , {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {FRAME, TRUE },
-			{FRAME, TRUE } , {WALL , FALSE} , {WALL , FALSE}, {PATH , FALSE}, {WALL , FALSE}, {WALL , FALSE}, {FRAME, TRUE },
-			{FRAME, TRUE } , {WALL , FALSE} , {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {FRAME, TRUE },
-			{FRAME, TRUE } , {PATH , FALSE} , {PATH , FALSE}, {WALL , FALSE}, {WALL , FALSE}, {WALL , FALSE}, {FRAME, TRUE },
-			{FRAME, TRUE } , {WALL , FALSE} , {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {GOAL , TRUE }, {FRAME, TRUE },
-			{FRAME, TRUE } , {FRAME, TRUE } , {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE },
-		},
-		{ //STAGE1
-			{FRAME, TRUE } , {FRAME, TRUE } , {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE },
-			{FRAME, TRUE } , {PATH , FALSE} , {WALL , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {FRAME, TRUE },
-			{FRAME, TRUE } , {PATH , FALSE} , {WALL , FALSE}, {PATH , FALSE}, {WALL , FALSE}, {WALL , FALSE}, {FRAME, TRUE },
-			{FRAME, TRUE } , {START, TRUE } , {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {GOAL , TRUE }, {FRAME, TRUE },
-			{FRAME, TRUE } , {PATH , FALSE} , {WALL , FALSE}, {WALL , FALSE}, {WALL , FALSE}, {WALL , FALSE}, {FRAME, TRUE },
-			{FRAME, TRUE } , {PATH , FALSE} , {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {PATH , FALSE}, {FRAME, TRUE },
-			{FRAME, TRUE } , {FRAME, TRUE } , {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE }, {FRAME, TRUE },
+		if(fileName[i] == '\n')
+			fileName[i] = '\0';
+	}
+
+	fp = fopen(fileName, "r");
+	if(fp == NULL)
+	{
+		printf("ファイルが存在しません。\n");
+		return;
+	}
+
+	//迷路初期化
+	for(i = 0; i < MAZE_ROW * MAZE_COLUMN; i++)
+	{
+		if(fgets(buf, sizeof(buf), fp) != NULL) //1行読み込み
+		{
+			if(sscanf(buf, "%d", &kind) == 1)
+			{
+				switch(kind)
+				{
+					case PATH:
+					case WALL:
+						maze[i].kind = kind;
+						maze[i].flag = FALSE;
+						break;
+					case GOAL:
+						goalCheck = 1;
+					case START:
+					case FRAME:
+						maze[i].kind = kind;
+						maze[i].flag = TRUE;
+						break;
+					default:
+						//ファイルのデータが正しい数値ではなかった場合
+						printf("不正なデータが存在します。\n");
+						fclose(fp);
+						return;
+						break;
+				}
+			}
+			else
+			{
+				//数字でなかった場合、sscanfが失敗
+				printf("不正なデータが存在します。\n");
+				fclose(fp);
+				return;
+			}
 		}
-	};
+		else
+		{
+			//データが途中で終わった場合、fgetsが失敗
+			printf("データ数が足りません。\n");
+			fclose(fp);
+			return;
+		}
+	}
+	fclose(fp);
+
+	//ゴールが存在するか確認
+	if(goalCheck == 0)
+	{
+		printf("ゴールが存在しません。\n");
+		return;
+	}
+
+
 
 	//プレイヤー初期化（スタートがなかったら終了）
-	if(MazePlayerInit(&player.row, &player.column, maze[stage]) == -1)
+	if(MazePlayerInit(&player.row, &player.column, maze) == -1)
 		return;
 	
-	while(MazeGoalCheck(player.row, player.column, maze[stage]) != 1) //ゴールするまで繰り返す
+	while(MazeGoalCheck(player.row, player.column, maze) != 1) //ゴールするまで繰り返す
 	{
-		MazeDraw(player.row, player.column, maze[stage]); //迷路表示
-		MazePlayerMove(&player.row, &player.column, maze[stage]); //プレイヤー移動
+		MazeDraw(player.row, player.column, maze); //迷路表示
+		MazePlayerMove(&player.row, &player.column, maze); //プレイヤー移動
 	}
 
 	//迷路最終結果発表
-	MazeDraw(player.row, player.column, maze[stage]);
+	MazeDraw(player.row, player.column, maze);
 }
 
 //メニュー
-enum MazeMenu {STAGE0, STAGE1, EXIT};
+enum MazeMenu {GAMESTART, EXIT};
 
 //タイトル
 int MazeTitle()
@@ -244,8 +304,7 @@ int MazeTitle()
 
 	printf("\n迷路ゲーム\n\n");
 	printf("メニュー\n");
-	printf("%d : ステージ0\n", STAGE0);
-	printf("%d : ステージ1\n", STAGE1);
+	printf("%d : ゲーム開始\n", GAMESTART);
 	printf("%d : 終了\n", EXIT);
 
 	printf("メニュー（番号）を選択してください。: ");
@@ -265,7 +324,6 @@ int MazeTitle()
 int main(void)
 {
 	int menu;
-	int stage;
 
 	while(1)
 	{
@@ -275,22 +333,9 @@ int main(void)
 
 		if(menu == EXIT) //EXITならwhileを抜ける
 			break;
-		else
-		{
-			//ステージ選択
-			switch(menu)
-			{
-				case STAGE0:
-					stage = 0;
-					break;
-				case STAGE1:
-					stage = 1;
-					break;
-			}
-		}
 		
 		//迷路ゲーム
-		MazeGame(stage);
+		MazeGame();
 
 		//ゲームが終わるとwhileの先頭に戻る
 	}
