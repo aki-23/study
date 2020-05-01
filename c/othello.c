@@ -26,13 +26,13 @@ int main(void)
 	int i;
 	int x, y;
 
-	for(x = 0; x <= BOARD_SQUARE; x++)
+	for(x = 0; x < BOARD_SQUARE; x++)
 	{
-		for(y = 0; y <= BOARD_SQUARE; y++)
+		for(y = 0; y < BOARD_SQUARE; y++)
 		{
-			if((x == 4 && y == 4) || (x == 5 && y == 5))
+			if((x == 3 && y == 3) || (x == 4 && y == 4))
 				board[x][y] = WHITE;
-			else if((x == 4 && y == 5) || (x == 5 && y ==4))
+			else if((x == 3 && y == 4) || (x == 4 && y == 3))
 				board[x][y] = BLACK;
 			else
 				board[x][y] = EMPTY;
@@ -43,7 +43,7 @@ int main(void)
 
 	printf("\nゲームスタート！\n\n");
 
-	for(i = 0; i <= (BOARD_SQUARE * BOARD_SQUARE); i++)
+	for(i = 0; i < (BOARD_SQUARE * BOARD_SQUARE - 4); i++)
 	{
 		Game();
 		Board_Output();
@@ -63,24 +63,26 @@ void Board_Output(void)
 {
 	int x, y;
 
-	for(x = 0; x <= BOARD_SQUARE; x++)
+	for(x = 0; x < BOARD_SQUARE; x++)
 	{
 		if (x == 0)
-			printf("\n  12345678");
-		else
+			// printf("\n  12345678");
+			printf("\n  １２３４５６７８\n");
+
+		printf("%d ", x + 1);
+		for(y = 0; y < BOARD_SQUARE; y++)
 		{
-			printf("%d ",x);
-			for(y = 1; y <= BOARD_SQUARE; y++)
+			switch(board[x][y])
 			{
-				switch(board[x][y])
-				{
-					case EMPTY:
-						printf("□"); break;
-					case BLACK:
-						printf("●"); break;
-					case WHITE:
-						printf("○"); break;
-				}
+				case EMPTY:
+					// printf("□"); break;
+					printf("・"); break;
+				case BLACK:
+					// printf("●"); break;
+					printf("⚫️"); break;
+				case WHITE:
+					// printf("○"); break;
+					printf("⚪️"); break;
 			}
 		}
 		printf("\n");
@@ -95,9 +97,11 @@ void Game(void)
 	switch(player_number)
 	{
 		case BLACK:
-			printf("●"); break;
+			// printf("●"); break;
+			printf("⚫️"); break;
 		case WHITE:
-			printf("○"); break;
+			// printf("○"); break;
+			printf("⚪️"); break;
 	}
 	printf(")の番です。\n");
 
@@ -108,7 +112,9 @@ void Game(void)
 
 		if(x >= 1 && x <= BOARD_SQUARE && y >= 1 && y <= BOARD_SQUARE)
 		{
-			if(board[x][y] == 0)
+			x --;
+			y --;
+			if(board[x][y] == EMPTY)
 			{
 				if(Board_Judgment(x, y) == TRUE)
 					break;
@@ -224,9 +230,9 @@ void Board_Scan(void)
 	int x, y;
 	int black_num = 0, white_num = 0;
 
-	for(x = 1; x <= BOARD_SQUARE; x++)
+	for(x = 0; x < BOARD_SQUARE; x++)
 	{
-		for(y = 1; y <= BOARD_SQUARE; y++)
+		for(y = 0; y < BOARD_SQUARE; y++)
 		{
 			if(board[x][y] == BLACK)
 				black_num = 1;
@@ -246,9 +252,9 @@ void Finish(void)
 
 	Board_Output();
 
-	for(x = 1; x <= BOARD_SQUARE; x++)
+	for(x = 0; x < BOARD_SQUARE; x++)
 	{
-		for(y = 1; y <= BOARD_SQUARE; y++)
+		for(y = 0; y < BOARD_SQUARE; y++)
 		{
 			if(board[x][y] == BLACK)
 				black_count += 1;
@@ -257,11 +263,16 @@ void Finish(void)
 		}
 	}
 
-	printf("1P(●) : %d  2P(○) : %d\n", black_count, white_count);
+	// printf("1P(●) : %d  2P(○) : %d\n", black_count, white_count);
+	printf("1P(⚫️) : %d  2P(⚪️) : %d\n", black_count, white_count);
 	if(black_count > white_count)
-		printf("1P(●)の勝利！");
+		// printf("1P(●)の勝利！\n");
+		printf("1P(⚫️)の勝利！\n");
 	else if(black_count < white_count)
-		printf("2P(○)の勝利！");
+		// printf("2P(○)の勝利！\n");
+		printf("2P(⚪️)の勝利！\n");
 	else
-		printf("引き分け");
+		printf("引き分け\n");
+
+	exit(0);
 }
