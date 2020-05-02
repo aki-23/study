@@ -11,13 +11,16 @@
 #define TRUE  1
 
 int board[BOARD_SQUARE][BOARD_SQUARE];
+int sub_board[BOARD_SQUARE][BOARD_SQUARE];
 int player_number = 1;
 
 void Board_Output(void);
 void Game(void);
-int Board_Judgment(int x, int y);
-int Board_Judgment_Sub(int x, int y, int move_x, int move_y);
+int  Board_Judgment(int x, int y);
+int  Board_Judgment_Sub(int x, int y, int move_x, int move_y);
 void Board_Scan(void);
+int  Pass_Judgment(void);
+void Board_Reset(void);
 void Finish(void);
 
 
@@ -41,7 +44,7 @@ int main(void)
 
 	Board_Output();
 
-	printf("\nゲームスタート！\n\n");
+	printf("\nゲームスタート！\n");
 
 	for(i = 0; i < (BOARD_SQUARE * BOARD_SQUARE - 4); i++)
 	{
@@ -93,7 +96,16 @@ void Game(void)
 {
 	int x, y;
 
-	printf("%dP(",player_number);
+	if(Pass_Judgment() == FALSE)
+	{
+		printf("\n%dPの置く場所がないためスキップ\n", player_number);
+		if(player_number == BLACK)
+			player_number = WHITE;
+		else
+			player_number = BLACK;
+	}
+
+	printf("\n%dP(",player_number);
 	switch(player_number)
 	{
 		case BLACK:
@@ -128,6 +140,46 @@ void Game(void)
 			printf("範囲外のため、その場所には置けません。\n");
 	}
 	Board_Scan();
+}
+
+int Pass_Judgment(void)
+{
+	int x, y;
+
+	for(x = 0; x < BOARD_SQUARE; x++)
+	{
+		for(y = 0; y < BOARD_SQUARE; y++)
+			sub_board[x][y] = board[x][y];
+	}
+
+	for(x = 0; x < BOARD_SQUARE; x++)
+	{
+		for(y = 0; y < BOARD_SQUARE; y++)
+		{
+			if(board[x][y] == EMPTY)
+			{
+				if(Board_Judgment(x, y) == TRUE)
+				{
+					Board_Reset();
+					// printf("%d %d\n", x + 1, y + 1);
+					return 1;
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+void Board_Reset(void)
+{
+	int x, y;
+
+	for(x = 0; x < BOARD_SQUARE; x++)
+	{
+		for(y = 0; y < BOARD_SQUARE; y++)
+			board[x][y] = sub_board[x][y];
+	}
 }
 
 int Board_Judgment(int x, int y)
@@ -199,11 +251,13 @@ int Board_Judgment_Sub(int x, int y, int move_x, int move_y)
 
 	while(i < BOARD_SQUARE)
 	{
-		if(x + (move_x * i) > BOARD_SQUARE || y + (move_y * i) > BOARD_SQUARE)
+		if(x + (move_x * i) >= BOARD_SQUARE || y + (move_y * i) >= BOARD_SQUARE)
+			return 0;
+		else if(x + (move_x * i) < 0 || y + (move_y * i) < 0)
 			return 0;
 		if(board[x + (move_x * i)][y + (move_y * i)] == other_player_num)
 			judgment_num = 1;
-		else if (board[x + (move_x * i)][y + (move_y * i)] == player_number)
+		else if(board[x + (move_x * i)][y + (move_y * i)] == player_number)
 		{
 			i = i - 1;
 			if(judgment_num == 0)
